@@ -29,135 +29,153 @@ export default function SimControlsBar({
 }: SimControlsBarProps) {
   return (
     <div className="sim-toolbar-container">
-      {/* Tool Selection Palette */}
-      <div className="sim-tool-palette">
-        <span className="palette-label">INTERACTIVE SIMULATION ENGINE</span>
+      {/* Row 1: Interactive Tool Palette (Left) & Weather/Wind Conditions (Right) */}
+      <div className="sim-toolbar-row sim-row-top">
+        <div className="sim-tool-palette">
+          <span className="palette-label">INTERACTIVE SIMULATION ENGINE</span>
+          <div className="tool-btn-group">
+            <button
+              type="button"
+              className={`tool-btn ${toolMode === "inspect" ? "active" : ""}`}
+              onClick={() => onSelectToolMode("inspect")}
+              title="Inspect & click drones or map elements"
+            >
+              <span className="tool-icon">👆</span>
+              <span>Inspect</span>
+            </button>
 
-        <div className="tool-btn-group">
-          <button
-            className={`tool-btn ${toolMode === "inspect" ? "active" : ""}`}
-            onClick={() => onSelectToolMode("inspect")}
-            title="Inspect & click drones or map elements"
-          >
-            <span className="tool-icon">👆</span>
-            <span>Inspect</span>
-          </button>
+            <button
+              type="button"
+              className={`tool-btn ${toolMode === "add_hazard" ? "active" : ""}`}
+              onClick={() => onSelectToolMode("add_hazard")}
+              title="Click anywhere on the map to place a dynamic obstacle"
+            >
+              <span className="tool-icon">⚠️</span>
+              <span>+ Place Hazard</span>
+            </button>
 
-          <button
-            className={`tool-btn ${toolMode === "add_hazard" ? "active" : ""}`}
-            onClick={() => onSelectToolMode("add_hazard")}
-            title="Click anywhere on the rescue map to place a dynamic obstacle"
-          >
-            <span className="tool-icon">⚠️</span>
-            <span>+ Place Hazard</span>
-          </button>
+            <button
+              type="button"
+              className={`tool-btn ${toolMode === "add_survivor" ? "active" : ""}`}
+              onClick={() => onSelectToolMode("add_survivor")}
+              title="Click anywhere on the map to add a survivor hypothesis"
+            >
+              <span className="tool-icon">🎯</span>
+              <span>+ Add Survivor</span>
+            </button>
 
-          <button
-            className={`tool-btn ${toolMode === "add_survivor" ? "active" : ""}`}
-            onClick={() => onSelectToolMode("add_survivor")}
-            title="Click anywhere on the rescue map to add a survivor hypothesis"
-          >
-            <span className="tool-icon">🎯</span>
-            <span>+ Add Survivor</span>
-          </button>
+            {toolMode === "add_hazard" && (
+              <div className="sub-palette-options animate-fade-in">
+                {(["landslide", "flood", "smoke"] as HazardType[]).map((hType) => (
+                  <button
+                    key={hType}
+                    type="button"
+                    className={`mini-chip ${selectedHazardType === hType ? "active" : ""}`}
+                    onClick={() => onSelectHazardType(hType)}
+                  >
+                    {hType === "landslide"
+                      ? "⛰️ Landslide"
+                      : hType === "flood"
+                        ? "🌊 Flash Flood"
+                        : "💨 Dense Smoke"}
+                  </button>
+                ))}
+                <span className="click-hint">Click on map to drop</span>
+              </div>
+            )}
+
+            {toolMode === "add_survivor" && (
+              <div className="sub-palette-options animate-fade-in">
+                <span className="click-hint">Click anywhere on map to add hotspot</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {toolMode === "add_hazard" && (
-          <div className="sub-palette-options animate-fade-in">
-            <small>Hazard type:</small>
-            {(["landslide", "flood", "smoke"] as HazardType[]).map((hType) => (
-              <button
-                key={hType}
-                className={`mini-chip ${selectedHazardType === hType ? "active" : ""}`}
-                onClick={() => onSelectHazardType(hType)}
-              >
-                {hType === "landslide" ? "⛰️ Landslide" : hType === "flood" ? "🌊 Flash Flood" : "💨 Dense Smoke"}
-              </button>
-            ))}
-            <span className="click-hint">Click on map to drop</span>
-          </div>
-        )}
-
-        {toolMode === "add_survivor" && (
-          <div className="sub-palette-options animate-fade-in">
-            <span className="click-hint">Click on map to place new survivor hotspot</span>
-          </div>
-        )}
-      </div>
-
-      {/* Drone Fault Injection Controls */}
-      <div className="sim-fault-injector">
-        <span className="palette-label">INJECT FAULT</span>
-        <div className="drone-fault-selector">
-          {drones.map((drone) => (
-            <div key={drone.id} className="drone-fault-unit">
-              <span className="fault-drone-id" style={{ color: drone.color }}>
-                {drone.id}
-              </span>
-              <select
-                aria-label={`Inject fault for drone ${drone.id}`}
-                value={drone.manualFault ?? "none"}
+        {/* Environmental Conditions */}
+        <div className="sim-env-controls">
+          <span className="palette-label">HIMALAYAN WEATHER & WIND</span>
+          <div className="env-inputs">
+            <div className="env-wind-slider">
+              <div className="wind-label-row">
+                <small>Wind Gusts: <b>{environment.windSpeed} km/h</b></small>
+                {environment.windSpeed > 35 && (
+                  <span className="wind-danger-badge">TURBULENCE</span>
+                )}
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="65"
+                step="5"
+                value={environment.windSpeed}
                 onChange={(e) =>
-                  onInjectFailure(drone.id, e.target.value as Drone["manualFault"])
+                  onChangeEnvironment({
+                    ...environment,
+                    windSpeed: Number(e.target.value),
+                    turbulent: Number(e.target.value) > 35,
+                  })
                 }
-              >
-                <option value="none">Normal (Healthy)</option>
-                <option value="partition">Cut Link (Mesh Partition)</option>
-                <option value="battery_drain">Drain Battery (14%)</option>
-                <option value="sensor_fault">Sensor Glitch (Degrade)</option>
-              </select>
+                aria-label="Wind gusts speed slider"
+              />
             </div>
-          ))}
+
+            <div className="env-weather-select" role="group" aria-label="Weather selection">
+              {(["clear", "rain", "fog"] as WeatherType[]).map((w) => (
+                <button
+                  key={w}
+                  type="button"
+                  className={`weather-chip ${environment.weather === w ? "active" : ""}`}
+                  onClick={() => onChangeEnvironment({ ...environment, weather: w })}
+                >
+                  {w === "clear" ? "☀️ Clear" : w === "rain" ? "🌧️ Monsoon" : "🌫️ Fog"}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Environmental Controls */}
-      <div className="sim-env-controls">
-        <span className="palette-label">HIMALAYAN WEATHER & WIND</span>
-
-        <div className="env-inputs">
-          <div className="env-wind-slider">
-            <div className="wind-label-row">
-              <small>Wind Gusts: <b>{environment.windSpeed} km/h</b></small>
-              {environment.windSpeed > 35 && (
-                <span className="wind-danger-badge">TURBULENCE</span>
-              )}
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="65"
-              step="5"
-              value={environment.windSpeed}
-              onChange={(e) =>
-                onChangeEnvironment({
-                  ...environment,
-                  windSpeed: Number(e.target.value),
-                  turbulent: Number(e.target.value) > 35,
-                })
-              }
-            />
-          </div>
-
-          <div className="env-weather-select">
-            {(["clear", "rain", "fog"] as WeatherType[]).map((w) => (
-              <button
-                key={w}
-                className={`weather-chip ${environment.weather === w ? "active" : ""}`}
-                onClick={() => onChangeEnvironment({ ...environment, weather: w })}
-              >
-                {w === "clear" ? "☀️ Clear" : w === "rain" ? "🌧️ Monsoon Rain" : "🌫️ Fog"}
-              </button>
+      {/* Row 2: Swarm Fault Injection (Left) & Reset Button (Right) */}
+      <div className="sim-toolbar-row sim-row-bottom">
+        <div className="sim-fault-injector">
+          <span className="palette-label">INJECT FAULT (SWARM RESILIENCE)</span>
+          <div className="drone-fault-selector">
+            {drones.map((drone) => (
+              <div key={drone.id} className="drone-fault-unit">
+                <span
+                  className="fault-drone-id"
+                  style={{ color: drone.color, borderColor: drone.color }}
+                >
+                  {drone.id}
+                </span>
+                <select
+                  aria-label={`Inject fault for drone ${drone.id}`}
+                  value={drone.manualFault ?? "none"}
+                  onChange={(e) =>
+                    onInjectFailure(drone.id, e.target.value as Drone["manualFault"])
+                  }
+                >
+                  <option value="none">Normal (Healthy)</option>
+                  <option value="partition">Cut Link (Mesh Partition)</option>
+                  <option value="battery_drain">Drain Battery (14%)</option>
+                  <option value="sensor_fault">Sensor Glitch (Degrade)</option>
+                </select>
+              </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Reset button */}
-      <div className="sim-reset-wrap">
-        <button className="sim-reset-btn" onClick={onResetSim} title="Reset custom hazards and faults">
-          ↺ Reset
-        </button>
+        <div className="sim-reset-wrap">
+          <button
+            type="button"
+            className="sim-reset-btn"
+            onClick={onResetSim}
+            title="Reset dynamic hazards and faults to baseline"
+          >
+            <span>↺</span> Reset Simulation
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1281,10 +1281,10 @@ export default function Home() {
           <span className="brand-mark" aria-hidden="true">
             JM
           </span>
-          <span>
+          <div className="brand-text">
             <strong>JEEVANMESH</strong>
             <small>Self-Healing Rescue Swarm</small>
-          </span>
+          </div>
         </a>
 
         <nav className="main-nav" aria-label="Dashboard sections">
@@ -1299,24 +1299,22 @@ export default function Home() {
         </nav>
 
         <div className="topbar-actions">
-          <div className="topbar-extra-actions">
-            <button
-              className="crdt-button"
-              onClick={() => setShowAuditModal(true)}
-              title="Inspect CRDT Consensus & Export GeoJSON/Audit Ledger"
-            >
-              <span>📜</span> CRDT & Export
-            </button>
-            <button
-              className="phone-preview-button"
-              onClick={() => setShowJeevanLinkPhone(true)}
-              title="Simulate what a stranded survivor sees on their smartphone"
-            >
-              <span>📱</span> JeevanLink Portal
-            </button>
-          </div>
+          <button
+            className="crdt-button"
+            onClick={() => setShowAuditModal(true)}
+            title="Inspect CRDT Consensus & Export GeoJSON/Audit Ledger"
+          >
+            <span className="btn-icon">📜</span> CRDT & Export
+          </button>
+          <button
+            className="phone-preview-button"
+            onClick={() => setShowJeevanLinkPhone(true)}
+            title="Simulate what a stranded survivor sees on their smartphone"
+          >
+            <span className="btn-icon">📱</span> JeevanLink Portal
+          </button>
           <button className="models-button" onClick={() => setShowModels(true)}>
-            AI stack
+            AI Stack
           </button>
           <div className="mission-clock">
             <small>Mission time</small>

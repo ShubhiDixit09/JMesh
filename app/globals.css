@@ -67,76 +67,78 @@ input:focus-visible + span {
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  min-height: 76px;
-  display: grid;
-  grid-template-columns: minmax(240px, 0.9fr) minmax(470px, 1.35fr) minmax(430px, 1fr);
+  z-index: 1000;
+  min-height: 62px;
+  display: flex;
   align-items: center;
-  gap: 22px;
-  padding: 0 24px;
-  background: rgba(255, 255, 255, 0.96);
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 24px;
+  background: rgba(255, 255, 255, 0.97);
   border-bottom: 1px solid var(--line);
-  box-shadow: 0 5px 22px rgba(24, 43, 58, 0.06);
+  box-shadow: 0 4px 20px rgba(24, 43, 58, 0.05);
   backdrop-filter: blur(18px);
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: var(--ink);
   text-decoration: none;
-  width: max-content;
+  flex-shrink: 0;
 }
 
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border: 3px solid currentColor;
+  width: 36px;
+  height: 36px;
+  border: 2.5px solid currentColor;
   border-radius: 50%;
   color: #152534;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.04em;
   position: relative;
+  flex-shrink: 0;
 }
 
 .brand-mark::after {
   content: "";
   position: absolute;
-  width: 12px;
-  height: 6px;
-  right: -6px;
-  border-top: 3px solid currentColor;
-  border-bottom: 3px solid currentColor;
+  width: 10px;
+  height: 5px;
+  right: -5px;
+  border-top: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
   background: #fff;
 }
 
-.brand > span:last-child {
+.brand-text {
   display: flex;
   flex-direction: column;
 }
 
 .brand strong {
-  font-size: 20px;
-  letter-spacing: 0.025em;
-  line-height: 1.05;
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
 }
 
 .brand small {
   color: var(--muted);
-  font-size: 11px;
-  margin-top: 4px;
+  font-size: 10px;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
 }
 
 .main-nav {
-  height: 76px;
   display: flex;
-  justify-content: center;
-  align-items: stretch;
+  align-items: center;
   gap: 4px;
+  flex: 0 1 auto;
+  height: 38px;
 }
 
 .main-nav a {
@@ -144,40 +146,31 @@ input:focus-visible + span {
   text-decoration: none;
   font-size: 13px;
   font-weight: 650;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  padding: 0 14px;
-  position: relative;
+  padding: 6px 11px;
+  border-radius: 7px;
+  transition: all 160ms ease;
+  white-space: nowrap;
 }
 
-.main-nav a::after {
-  content: "";
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 0;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--blue);
-  transform: scaleX(0);
-  transition: transform 160ms ease;
-}
-
-.main-nav a:hover,
-.main-nav a.active {
+.main-nav a:hover {
   color: var(--ink);
+  background: #f0f4f8;
 }
 
-.main-nav a:hover::after,
-.main-nav a.active::after {
-  transform: scaleX(1);
+.main-nav a.active {
+  color: var(--blue);
+  background: #eaf2fa;
+  font-weight: 700;
 }
 
 .topbar-actions {
-  justify-self: end;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .models-button,
@@ -2814,10 +2807,11 @@ input:focus-visible + span {
 
 @media (max-width: 1440px) {
   .topbar {
-    grid-template-columns: minmax(220px, 0.85fr) minmax(430px, 1.2fr) minmax(390px, 0.95fr);
-    padding: 0 18px;
-    gap: 12px;
+    padding: 8px 18px;
+    gap: 10px;
   }
+  .main-nav a { padding: 5px 8px; font-size: 12px; }
+  .crdt-button, .phone-preview-button, .models-button { padding: 5px 8px; font-size: 11px; }
   .main-nav a { padding: 0 10px; }
   .command-strip { grid-template-columns: minmax(300px, 0.9fr) minmax(500px, 1.35fr) auto; }
   .map-stage { height: 590px; }
@@ -2829,7 +2823,9 @@ input:focus-visible + span {
 @media (max-width: 1180px) {
   .topbar {
     position: relative;
-    grid-template-columns: 1fr auto;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    gap: 8px;
   }
   .main-nav {
     order: 3;
@@ -3046,38 +3042,55 @@ input:focus-visible + span {
 
 /* Interactive Simulation Engine Bar */
 .sim-toolbar-container {
-  display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  gap: 16px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   background: #ffffff;
   border: 1px solid #d4dfe8;
   border-radius: 12px;
-  padding: 10px 18px;
+  padding: 12px 18px;
   margin: 12px 24px 0;
   box-shadow: 0 4px 18px rgba(18, 38, 55, 0.05);
 }
 
-.sim-tool-palette,
-.sim-fault-injector,
-.sim-env-controls {
+.sim-toolbar-row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sim-row-top {
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 10px;
+}
+
+.sim-row-bottom {
+  padding-top: 2px;
+}
+
+.sim-tool-palette {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .palette-label {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 850;
   letter-spacing: 0.06em;
   color: #637788;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .tool-btn-group {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .tool-btn {
@@ -3087,12 +3100,13 @@ input:focus-visible + span {
   background: #f3f6f9;
   border: 1px solid #d2dde6;
   border-radius: 8px;
-  padding: 6px 11px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #2c4155;
   cursor: pointer;
   transition: all 0.16s ease;
+  white-space: nowrap;
 }
 
 .tool-btn:hover {
@@ -3113,6 +3127,7 @@ input:focus-visible + span {
   gap: 6px;
   font-size: 11px;
   color: #55697a;
+  flex-wrap: wrap;
 }
 
 .mini-chip {
@@ -3124,6 +3139,7 @@ input:focus-visible + span {
   border: 1px solid #c9d8e5;
   color: #334d63;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .mini-chip.active {
@@ -3136,52 +3152,30 @@ input:focus-visible + span {
   font-style: italic;
   color: #236fbc;
   font-size: 11px;
+  white-space: nowrap;
 }
 
-/* Drone Fault Injection */
-.drone-fault-selector {
+/* Environmental Controls */
+.sim-env-controls {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
 }
 
-.drone-fault-unit {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #f7fafc;
-  border: 1px solid #d8e3ed;
-  border-radius: 6px;
-  padding: 2px 6px;
-}
-
-.fault-drone-id {
-  font-weight: 900;
-  font-size: 11px;
-}
-
-.drone-fault-unit select {
-  font-size: 11px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  color: #233c52;
-  cursor: pointer;
-  outline: none;
-}
-
-/* Himalayan Weather Controls */
 .env-inputs {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .env-wind-slider {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 140px;
+  min-width: 145px;
 }
 
 .wind-label-row {
@@ -3190,6 +3184,7 @@ input:focus-visible + span {
   align-items: center;
   font-size: 11px;
   color: #435b6f;
+  white-space: nowrap;
 }
 
 .wind-danger-badge {
@@ -3210,6 +3205,7 @@ input:focus-visible + span {
 .env-weather-select {
   display: flex;
   gap: 4px;
+  flex-wrap: wrap;
 }
 
 .weather-chip {
@@ -3221,6 +3217,12 @@ input:focus-visible + span {
   border: 1px solid #cedfe8;
   color: #2f495e;
   cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.weather-chip:hover {
+  background: #e1ebf4;
 }
 
 .weather-chip.active {
@@ -3229,9 +3231,55 @@ input:focus-visible + span {
   color: #ffffff;
 }
 
+/* Drone Fault Injection */
+.sim-fault-injector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.drone-fault-selector {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.drone-fault-unit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f7fafc;
+  border: 1px solid #d8e3ed;
+  border-radius: 6px;
+  padding: 3px 7px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.fault-drone-id {
+  font-weight: 900;
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  background: #fff;
+}
+
+.drone-fault-unit select {
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #233c52;
+  cursor: pointer;
+  outline: none;
+}
+
 .sim-reset-wrap {
   display: flex;
   align-items: center;
+  margin-left: auto;
 }
 
 .sim-reset-btn {
@@ -3239,15 +3287,21 @@ input:focus-visible + span {
   border: 1px solid #ffd4d4;
   color: #c43228;
   border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
+  padding: 5px 12px;
+  font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.16s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .sim-reset-btn:hover {
   background: #ffe3e3;
+  border-color: #e67067;
+  transform: translateY(-1px);
 }
 
 /* Map Canvas Interactive States */
