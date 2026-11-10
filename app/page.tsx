@@ -29,6 +29,7 @@ import type {
 import JeevanLinkModal from "./components/JeevanLinkModal";
 import AuditExportModal from "./components/AuditExportModal";
 import SimControlsBar, { type SimToolMode } from "./components/SimControlsBar";
+import RealMissionMap from "./components/RealMissionMap";
 
 declare global {
   interface Window {
@@ -912,6 +913,7 @@ export default function Home() {
   const [scenarioStep, setScenarioStep] = useState(4);
   const [autoDemo, setAutoDemo] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("2d");
+  const [mapEngine, setMapEngine] = useState<"real" | "vector">("real");
   const [zoom, setZoom] = useState(15);
   const [selectedDrone, setSelectedDrone] = useState<DroneId>("D4");
   const [approval, setApproval] = useState<ApprovalState>("pending");
@@ -1490,21 +1492,45 @@ export default function Home() {
               <div
                 className="segmented-control"
                 role="group"
-                aria-label="Map dimension"
+                aria-label="Map engine"
               >
                 <button
-                  className={viewMode === "2d" ? "active" : ""}
-                  onClick={() => setViewMode("2d")}
+                  className={mapEngine === "real" ? "active" : ""}
+                  onClick={() => setMapEngine("real")}
+                  title="Real Live Satellite Imagery & Topographic Himalayan Map"
                 >
-                  2D map
+                  🛰️ Real Satellite / Topo
                 </button>
                 <button
-                  className={viewMode === "3d" ? "active" : ""}
-                  onClick={() => setViewMode("3d")}
+                  className={mapEngine === "vector" ? "active" : ""}
+                  onClick={() => setMapEngine("vector")}
+                  title="Tactical Vector Map with 3D tilt"
                 >
-                  3D terrain
+                  📐 Tactical Vector
                 </button>
               </div>
+
+              {mapEngine === "vector" && (
+                <div
+                  className="segmented-control"
+                  role="group"
+                  aria-label="Map dimension"
+                >
+                  <button
+                    className={viewMode === "2d" ? "active" : ""}
+                    onClick={() => setViewMode("2d")}
+                  >
+                    2D
+                  </button>
+                  <button
+                    className={viewMode === "3d" ? "active" : ""}
+                    onClick={() => setViewMode("3d")}
+                  >
+                    3D
+                  </button>
+                </div>
+              )}
+
               <div className="layer-controls">
                 {(Object.keys(layers) as LayerKey[]).map((layer) => (
                   <label key={layer}>
@@ -1526,7 +1552,67 @@ export default function Home() {
             </div>
           </div>
 
-          <div className={`map-stage mode-${viewMode}`}>
+          {mapEngine === "real" ? (
+            <RealMissionMap
+              drones={drones}
+              layers={layers}
+              scenarioStep={scenarioStep}
+              selectedDrone={selectedDrone}
+              onSelectDrone={setSelectedDrone}
+              spiralRadius={spiralRadius}
+              obstacles={obstacles}
+              survivors={survivors}
+              toolMode={toolMode}
+              onMapClickCoordinates={(x, y) => {
+                if (toolMode === "add_hazard") {
+                  const newHazard: ObstacleHazard = {
+                    id: `OBS-${obstacles.length + 1}`,
+                    label: `Dynamic ${selectedHazardType.toUpperCase()}`,
+                    type: selectedHazardType,
+                    x,
+                    y,
+                    radius: 32,
+                    createdTick: tick,
+                  };
+                  setObstacles((prev) => [...prev, newHazard]);
+                  addCRDTEvent({
+                    tone: "red",
+                    type: "HAZARD_DETECTED",
+                    droneId: "D2",
+                    text: `New ${selectedHazardType} hazard placed at Grid ${x}, ${y}. D* Lite rerouting triggered.`,
+                  });
+                  setToast(
+                    `HAZARD PLACED · Grid ${x}, ${y} (${selectedHazardType.toUpperCase()})`,
+                  );
+                } else if (toolMode === "add_survivor") {
+                  const newHId = `H${survivors.length + 1}`;
+                  const newSurv: SurvivorHotspot = {
+                    id: newHId,
+                    label: `Hotspot ${newHId} (Operator Flagged)`,
+                    x,
+                    y,
+                    confidence: 68,
+                    sources: ["Satellite Clue", "Incident Commander Flag"],
+                    status: "review",
+                    elevation: 2410,
+                    headcount: 1,
+                    timestamp: formatTime(missionSeconds).slice(0, 5),
+                  };
+                  setSurvivors((prev) => [...prev, newSurv]);
+                  addCRDTEvent({
+                    tone: "orange",
+                    type: "OBSERVATION",
+                    droneId: "D1",
+                    text: `New survivor hypothesis ${newHId} flagged at Grid ${x}, ${y} (Conf: 68%). Secondary quorum requested.`,
+                  });
+                  setToast(
+                    `SURVIVOR HYPOTHESIS ADDED · ${newHId} at Grid ${x}, ${y}`,
+                  );
+                }
+              }}
+            />
+          ) : (
+            <div className={`map-stage mode-${viewMode}`}>
             <div
               className={`map-transform ${googleMapStatus === "failed" ? "fallback-mode" : "google-mode"}`}
               style={{ "--map-zoom": zoom } as CSSProperties}
@@ -2081,6 +2167,7 @@ export default function Home() {
               <span>100 m</span>
             </div>
           </div>
+          )}
 
           <div className="map-footer">
             <div>

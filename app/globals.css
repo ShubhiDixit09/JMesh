@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
   --ink: #10202e;
@@ -4271,4 +4272,281 @@ input:focus-visible + span {
   .export-action-strip {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================================================
+   REAL INTERACTIVE MAP STYLING (LEAFLET / SATELLITE / TOPO)
+   ========================================================================== */
+
+.real-mission-map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 540px;
+  background: #0f1720;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.real-map-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 540px;
+  background: #0a1118;
+  z-index: 1;
+}
+
+.real-map-canvas.tool-add_hazard {
+  cursor: crosshair !important;
+}
+
+.real-map-canvas.tool-add_survivor {
+  cursor: copy !important;
+}
+
+/* Map Style Selector (Satellite, Topo, Tactical) */
+.map-style-switcher {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 400;
+  display: flex;
+  background: rgba(16, 32, 46, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 3px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+.map-style-switcher button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  color: #c4d4e2;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-style-switcher button:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.map-style-switcher button.active {
+  background: #236fbc;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(35, 111, 188, 0.4);
+}
+
+/* Live GPS Location Chip */
+.map-live-tag {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  z-index: 400;
+  background: rgba(16, 32, 46, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.map-live-tag strong {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.map-live-tag small {
+  font-size: 9px;
+  color: #55b2ff;
+  font-weight: 700;
+}
+
+.live-gps-dot {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #39b54a;
+  box-shadow: 0 0 8px #39b54a;
+}
+
+/* Real Map Zoom Controls */
+.real-map-zoom-controls {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  background: rgba(16, 32, 46, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.real-map-zoom-controls button {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s ease;
+}
+
+.real-map-zoom-controls button:last-child {
+  border-bottom: none;
+}
+
+.real-map-zoom-controls button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Drone Marker on Real Leaflet Map */
+.realmap-drone-marker {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.drone-pulse-circle {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--drone-col, #2879d0);
+  opacity: 0.25;
+  animation: dronePulseRing 2s infinite ease-out;
+}
+
+@keyframes dronePulseRing {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.drone-badge {
+  position: relative;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s ease;
+}
+
+.realmap-drone-marker:hover .drone-badge,
+.realmap-drone-marker.selected .drone-badge {
+  transform: scale(1.2);
+  border-color: #ffd700;
+  box-shadow: 0 0 12px #ffd700;
+}
+
+.drone-hover-label {
+  position: absolute;
+  bottom: -12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Survivor & SOS Markers on Real Map */
+.realmap-surv-pin {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  border: 2px solid #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+.realmap-surv-pin.high {
+  background: #39b54a;
+}
+
+.realmap-surv-pin.medium {
+  background: #e27d14;
+}
+
+.realmap-sos-pin {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #8b3cf0;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 16px rgba(139, 60, 240, 0.8);
+}
+
+.sos-ring {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #8b3cf0;
+  animation: sosWave 1.6s infinite ease-out;
+}
+
+@keyframes sosWave {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* Leaflet Container Overrides */
+.leaflet-container {
+  font-family: inherit;
+  background: #0d151e;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #10202e !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(255, 255, 255, 0.96) !important;
 }

@@ -45,7 +45,8 @@ Potential relay positions receive a virtual brightness score based on connectivi
 - **Store–Carry–Forward Delay-Tolerant Networking (DTN):** Disconnected nodes buffer signed facts and reconcile upon reconnection.
 - **Firefly Relay Optimization:** Autonomous temporary relay repositioning based on link gain, survivor priority, and battery cost.
 - **Human Safety Checkpoint:** Explicit commander authorization required for high-risk rescue maneuvers.
-- **Dual Map Engine:** Interactive 2D/3D SVG vector terrain with optional Google Maps JavaScript SDK fallback.
+- **Real Interactive Geographic Map Engine:** Live, zero-config high-resolution satellite imagery (Esri World Imagery) and real Himalayan topographic contour maps (Esri World Topo) centered at $30.981^\circ\text{N}, 78.934^\circ\text{E}$ (Bhagirathi Valley, Uttarakhand). No API keys or billing setup required.
+- **Dual Map Architecture:** Instant toggle between 🛰️ Real Satellite/Topo Geographic Engine and 📐 Tactical Vector (2D/3D tilt) Engine. Also maintains optional Google Maps JavaScript SDK compatibility.
 
 ## Quick start
 
