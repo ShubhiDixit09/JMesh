@@ -31,22 +31,21 @@ Potential relay positions receive a virtual brightness score based on connectivi
 
 ## What the working prototype demonstrates
 
-- No permanent leader; loss of one drone does not stop the mission
-- Self-healing scout, verifier, relay and supply roles
-- Adaptive whale-inspired spiral search and confidence heatmap
-- Simulated RGB/thermal survivor evidence with confidence and provenance
-- Conflicting reports that trigger a second observation
-- Battery-aware task inheritance with an auditable task capsule
-- D* Lite-style rerouting when a road or corridor is blocked
-- Store–carry–forward packets during a network partition
-- Firefly-inspired temporary relay placement
-- Meaning-before-media bandwidth prioritisation
-- JeevanLink emergency access for affected civilians
-- 2D/3D map modes, layers, links, routes and live 3D coordinates
-- Automatic network-failure demonstration and reconnection merge
-- Human safety checkpoint for dangerous rescue decisions
-- Built-in feature catalogue and operator walkthrough
-- Optional Google Maps JavaScript SDK with automatic offline-map fallback
+- **No permanent leader:** Loss of any single drone does not stop or freeze the mission.
+- **Interactive Simulation Engine:** Place custom hazards (landslides, flash floods, dense smoke) and survivor hypotheses directly on the rescue map.
+- **Manual Fault Injection:** Test swarm resilience by cutting individual mesh links, draining battery to 14%, or degrading thermal sensors.
+- **Himalayan Environmental Engine:** Dynamic wind gust slider (up to 65 km/h) causing flight turbulence and increased battery burn rate, plus weather toggles (Clear, Monsoon Rain, Alpine Mist).
+- **CRDT State Persistence & GeoJSON Export:** Cryptographically signed event stream with vector clocks, mathematical merge guarantees ($0.72 \oplus 0.76 = 0.93$), and 1-click **GeoJSON Incident Map** & **Full Audit Ledger JSON** downloads for incident commanders.
+- **Interactive JeevanLink Civilian Smartphone Portal:** Live smartphone modal showing what stranded survivors see on captive Wi-Fi (One-Touch Emergency SOS, Safe Haven Compass, 40-char mesh tactical chat, and offline flood survival guide).
+- **Enhanced 3D Geospatial & RF Visualization:** Dynamic line-of-sight RF coverage cones scaling with drone altitude ($z$), vertical 3D altitude drop lines, and animated breadcrumb flight trails.
+- **BubbleNet Adaptive Search:** Whale-inspired spiral search and confidence heatmap.
+- **Simulated RGB/Thermal Sensor Fusion:** Edge YOLO11n + SmolVLM2 reasoning with provenance and confidence rings.
+- **D* Lite Local Detours:** Automatic dynamic route recalculation around blocked corridors.
+- **Battery-Aware Task Capsules:** Seamless handoff of unfinished tasks and mission context to neighboring drones before return-to-base.
+- **Store–Carry–Forward Delay-Tolerant Networking (DTN):** Disconnected nodes buffer signed facts and reconcile upon reconnection.
+- **Firefly Relay Optimization:** Autonomous temporary relay repositioning based on link gain, survivor priority, and battery cost.
+- **Human Safety Checkpoint:** Explicit commander authorization required for high-risk rescue maneuvers.
+- **Dual Map Engine:** Interactive 2D/3D SVG vector terrain with optional Google Maps JavaScript SDK fallback.
 
 ## Quick start
 
