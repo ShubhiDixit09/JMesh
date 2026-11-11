@@ -63,41 +63,59 @@ export default function RealMissionMap({
   const [zoomLevel, setZoomLevel] = useState(15);
   const LRef = useRef<any>(null);
 
-  // Initialize Leaflet Map safely in browser environment
+  // Store the latest callback in a ref to prevent re-initializing the map on parent re-renders
+  const onMapClickCoordinatesRef = useRef(onMapClickCoordinates);
   useEffect(() => {
-    let cancelled = false;
+    onMapClickCoordinatesRef.current = onMapClickCoordinates;
+  }, [onMapClickCoordinates]);
+
+  // Initialize Leaflet Map once safely on mount
+  useEffect(() => {
+    let isCancelled = false;
 
     async function initMap() {
       if (typeof window === "undefined" || !mapContainerRef.current) return;
 
       try {
-        const L = (await import("leaflet")).default;
-        if (cancelled || !mapContainerRef.current) return;
+        const leaf = await import("leaflet");
+        const L = (window as any).L || (leaf as any).default || leaf;
+        if (!L || typeof L.map !== "function") {
+          console.error("Leaflet is not available on import", L);
+          return;
+        }
+        if (isCancelled || !mapContainerRef.current) return;
         LRef.current = L;
 
-        // If map already exists, remove it first
+        // Clean up prior Leaflet instance on the container if any
         if (mapInstanceRef.current) {
           mapInstanceRef.current.remove();
           mapInstanceRef.current = null;
         }
+        const container = mapContainerRef.current;
+        if ((container as any)._leaflet_id) {
+          (container as any)._leaflet_id = null;
+        }
 
-        const map = L.map(mapContainerRef.current, {
+        const map = L.map(container, {
           center: [CENTER_LAT, CENTER_LNG],
           zoom: 15,
-          minZoom: 12,
+          minZoom: 11,
           maxZoom: 18,
           zoomControl: false,
           attributionControl: false,
+          preferCanvas: true,
         });
 
         // Click handler on map for dynamic hazard and survivor placement
         map.on("click", (e: any) => {
           const { lat, lng } = e.latlng;
           const [xPercent, yPercent] = fromLatLng(lat, lng);
-          onMapClickCoordinates(
-            Math.max(5, Math.min(95, xPercent)),
-            Math.max(5, Math.min(95, yPercent)),
-          );
+          if (onMapClickCoordinatesRef.current) {
+            onMapClickCoordinatesRef.current(
+              Math.max(5, Math.min(95, xPercent)),
+              Math.max(5, Math.min(95, yPercent)),
+            );
+          }
         });
 
         map.on("zoomend", () => {
@@ -107,6 +125,25 @@ export default function RealMissionMap({
         const overlayGroup = L.layerGroup().addTo(map);
         overlayGroupRef.current = overlayGroup;
         mapInstanceRef.current = map;
+
+        // Invalidate size immediately and after layout paint
+        map.invalidateSize();
+        requestAnimationFrame(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        });
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        }, 150);
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        }, 600);
+
         setLeafletLoaded(true);
       } catch (err) {
         console.error("Leaflet map initialization error:", err);
@@ -116,19 +153,19 @@ export default function RealMissionMap({
     initMap();
 
     return () => {
-      cancelled = true;
+      isCancelled = true;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [onMapClickCoordinates]);
+  }, []); // Run ONCE on mount
 
-  // Update Base Tile Layer when style changes
+  // Update Base Tile Layer when style changes or map is ready
   useEffect(() => {
     const map = mapInstanceRef.current;
     const L = LRef.current;
-    if (!map || !L) return;
+    if (!map || !L || !leafletLoaded) return;
 
     if (tileLayerRef.current) {
       map.removeLayer(tileLayerRef.current);
@@ -149,19 +186,22 @@ export default function RealMissionMap({
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}";
       maxNativeZoom = 17;
     } else {
-      // Tactical CartoDB Voyager Map (Clean roads, labels, infrastructure)
-      tileUrl =
-        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+      // OpenStreetMap standard tiles (Tactical Road & Infrastructure)
+      tileUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
       maxNativeZoom = 18;
     }
 
     const tileLayer = L.tileLayer(tileUrl, {
       maxNativeZoom,
       maxZoom: 19,
-      subdomains: ["a", "b", "c", "d"],
+      subdomains: ["a", "b", "c"],
+      attribution: "© Esri, USGS, OpenStreetMap contributors",
     }).addTo(map);
 
     tileLayerRef.current = tileLayer;
+
+    // Refresh size
+    map.invalidateSize();
   }, [mapStyle, leafletLoaded]);
 
   // Update Real-Time Mission Overlays (Drones, Obstacles, Survivors, RF Cones, Mesh Links)
@@ -169,16 +209,16 @@ export default function RealMissionMap({
     const map = mapInstanceRef.current;
     const L = LRef.current;
     const overlayGroup = overlayGroupRef.current;
-    if (!map || !L || !overlayGroup) return;
+    if (!map || !L || !overlayGroup || !leafletLoaded) return;
 
     overlayGroup.clearLayers();
 
     // 1. Heatmap Regions
     if (layers.heatmap) {
       const heatZones = [
-        { latLng: toLatLng(51, 28.9), radius: 240, color: "#ef4b35", opacity: 0.2 },
-        { latLng: toLatLng(23.8, 72.3), radius: 190, color: "#ef8a23", opacity: 0.18 },
-        { latLng: toLatLng(55.5, 60.3), radius: 130, color: "#d5ac38", opacity: 0.15 },
+        { latLng: toLatLng(51, 28.9), radius: 240, color: "#ef4b35", opacity: 0.22 },
+        { latLng: toLatLng(23.8, 72.3), radius: 190, color: "#ef8a23", opacity: 0.2 },
+        { latLng: toLatLng(55.5, 60.3), radius: 130, color: "#d5ac38", opacity: 0.18 },
       ];
       heatZones.forEach((z) => {
         L.circle(z.latLng, {
@@ -187,7 +227,7 @@ export default function RealMissionMap({
           fillOpacity: z.opacity,
           color: z.color,
           weight: 1.5,
-          opacity: 0.45,
+          opacity: 0.5,
           interactive: false,
         }).addTo(overlayGroup);
       });
@@ -208,7 +248,7 @@ export default function RealMissionMap({
         const circle = L.circle([lat, lng], {
           radius: radiusMeters,
           fillColor: color,
-          fillOpacity: 0.35,
+          fillOpacity: 0.38,
           color,
           weight: 2,
           dashArray: "4, 4",
@@ -226,9 +266,9 @@ export default function RealMissionMap({
         // Marker tag
         const icon = L.divIcon({
           className: "leaflet-hazard-tag",
-          html: `<span style="background: ${color}; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: 900; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">${obs.type === "flood" ? "FLOOD" : obs.type === "smoke" ? "SMOKE" : "BLOCKED"}</span>`,
-          iconSize: [46, 18],
-          iconAnchor: [23, 9],
+          html: `<span style="background: ${color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 900; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">${obs.type === "flood" ? "FLOOD" : obs.type === "smoke" ? "SMOKE" : "BLOCKED"}</span>`,
+          iconSize: [52, 20],
+          iconAnchor: [26, 10],
         });
         L.marker([lat, lng], { icon, interactive: false }).addTo(overlayGroup);
       });
@@ -251,7 +291,7 @@ export default function RealMissionMap({
         color: "#287dcc",
         weight: 2.5,
         dashArray: "6, 4",
-        opacity: 0.9,
+        opacity: 0.95,
         interactive: false,
       }).addTo(overlayGroup);
     }
@@ -270,6 +310,7 @@ export default function RealMissionMap({
       ] as const;
 
       links.forEach(([from, to, color]) => {
+        if (!from || !to) return;
         const p1 = toLatLng(from.x, from.y);
         const p2 = toLatLng(to.x, to.y);
         const isOffline = from.state === "offline" || to.state === "offline";
@@ -277,7 +318,7 @@ export default function RealMissionMap({
           color: isOffline ? "#d83f3a" : color,
           weight: 2.5,
           dashArray: isOffline ? "4, 6" : undefined,
-          opacity: isOffline ? 0.6 : 0.85,
+          opacity: isOffline ? 0.65 : 0.9,
           interactive: false,
         }).addTo(overlayGroup);
       });
@@ -293,7 +334,7 @@ export default function RealMissionMap({
         L.circle([lat, lng], {
           radius: coverageRadiusMeters,
           fillColor: drone.color,
-          fillOpacity: 0.12,
+          fillOpacity: 0.14,
           color: drone.color,
           weight: 1.5,
           dashArray: "3, 5",
@@ -395,7 +436,7 @@ export default function RealMissionMap({
   function handleZoom(delta: number) {
     if (!mapInstanceRef.current) return;
     mapInstanceRef.current.setZoom(
-      Math.max(12, Math.min(18, mapInstanceRef.current.getZoom() + delta)),
+      Math.max(11, Math.min(18, mapInstanceRef.current.getZoom() + delta)),
     );
   }
 
